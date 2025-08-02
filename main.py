@@ -7,14 +7,14 @@ from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 
 # Paths
-UPLOAD_FILE = "The Wonders of Science.docx"  # Change this to your actual file
-NUM_QUESTIONS = 5
+UPLOAD_FILE = "file-here" 
+NUM_QUESTIONS = 0
 OUTPUT_FOLDER = "results"
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 # LangChain setup
 llm = ChatGroq(
-    api_key="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",  # Replace with your actual API key
+    api_key="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",
     model="llama-3.3-70b-versatile",
     temperature=0.0
 )
@@ -39,7 +39,6 @@ A) [option A]
 B) [option B]
 C) [option C]
 D) [option D]
-Correct Answer: [correct option]
 """
 )
 

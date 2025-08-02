@@ -1,0 +1,37 @@
+			
+===============================================================================================
+					3. linspace()
+===============================================================================================
+Syntax:     varname = numpy.linspace(start, stop, num, endpoint, retstep, dtype)   
+=>start: It represents the starting value of the interval.
+=>stop:It represents the stopping value of the interval.
+=>num: The amount of evenly spaced samples over the interval to be generated. The default is 50.
+=>endpoint: Its true value indicates that the stopping value is included in the interval.
+=>rettstep: This has to be a boolean value. Represents the steps and samples between the consecutive numbers.
+=>dtype: It represents the data type of the array items.
+===============================================================================================					4. zeros():
+================================================================================================>This Function is used for building ZERO matrix either with 1-D or 2-D or n-D 
+=>Syntax:   varname=numpy.zeros(shape,dtype)
+=>Here Shape can be 1-D(number of Zeros)  or 2-D(Rows,Cols)  or n-D( Number of Matrices,Number of Rows, Number of Columns) 
+===============================================================================================
+				5. ones():
+===============================================================================================
+=>This Function is used for building ONEs matrix either with 1-D or 2-D or n-D 
+=>Syntax:   varname=numpy.ones(shape,dtype)
+
+=>Here Shape can be 1-D(number of ones)  or 2-D(Rows,Cols)  or n-D( Number of Matrices,Number of Rows, Number of Columns) 
+===============================================================================================							6.  full()
+===============================================================================================
+=>This is function is used for building a matrix by specifying fill value either 1-D or 2-D or n-D
+=>Syntax:-
+			varname=numpy.full(shape,fill_value,dtype)
+=>varname is an obejct of <class, numpy.ndarray>
+=>Here Shape can be 1-D(number of  Fill_Value)  or 2-D(Rows,Cols)  or n-D( Number of Matrices,Number of Rows, Number of Columns) 
+=>fill_value can be any number of programmer choice 
+===============================================================================================
+						7.  identity():
+===============================================================================================
+=>This function always bulid Identity or unit matrix 
+=>Syntax:-  varname=numpy.identity(N,dtype)
+=>Here N represents Either we can take Rows or Columns and PVM takes as NXN Matrix (Square Matrix--Unit or Identity)
+===============================================================================================

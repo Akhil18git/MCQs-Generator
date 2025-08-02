@@ -1,26 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>Generated MCQs</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .mcq-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .question {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .option {
+            margin: 5px 0;
+        }
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+        .incorrect {
+            color: red;
+        }
+        .result-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container mt-5 ">
-        <h2 class="text-center mb-4">Generated MCQs</h2>
-
-        <div class="mb-4">
-            <a class="btn btn-success me-2" href="{{ url_for('download_file', filename=txt_filename) }}">Download as .txt</a>
-            <a class="btn btn-danger" href="{{ url_for('download_file', filename=pdf_filename) }}">Download as .pdf</a>
+<body>
+    <h1>Generated Multiple Choice Questions</h1>
+    
+    <form id="mcqForm" method="post" action="/check_answers">
+        <input type="hidden" name="mcq_text" value="{{ mcq_text }}">
+        
+        {% for mcq in mcqs %}
+        <div class="mcq-container">
+            <div class="question">{{ mcq['q_num']+1 }}. {{ mcq.question }}</div>
+            {% for option in mcq.options %}
+            <div class="option">
+                <input type="radio" 
+                       id="{{ option.id }}" 
+                       name="q_{{ mcq['q_num'] +1 }}"
+                       value="{{ option.letter }}"
+                       {% if results %}
+                        {% if results[mcq['q_num']]['user_answer'] == option.letter %} checked
+                        disabled
+                        {% endif %}
+                       {% endif %}>
+                <label for="{{ option.id }}">{{ option.letter }} {{ option.text }}</label>
+            </div>
+            {% endfor %}
+            
+            {% if results %}
+            <div class="feedback">
+                {% set result = results[mcq['q_num']] %}
+                {% if result['user_answer'] == result['correct_answer'] %}
+                <p class="correct">Correct! The answer is {{ result['correct_answer'] }}.</p>
+                {% else %}
+                <p class="incorrect">
+                    Your answer: {{ result['user_answer'] if result['user_answer'] else "Not answered" }}. 
+                    Correct answer: {{ result['correct_answer'] }}.
+                </p>
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
-
-        <div class="p-3 bg-white border rounded shadow-sm" style="white-space: pre-wrap;">
-            {{ mcqs }}
+        {% endfor %}
+        
+        <div class="text-center mt-4">
+            {% if results %}
+            <!-- After checking answers -->
+             <button><a href="/" class="btn btn-outline-primary btn-lg">Try Again</a></button>
+            {% else %}
+            <!-- Before checking answers (during quiz) -->
+            <button class="btn btn-success btn-lg" type="submit">Check Answers</button>
+            {% endif %}
         </div>
+        <hr>
 
-        <div class="mt-4">
-            <a href="/" class="btn btn-secondary">Generate Again</a>
-        </div>
+</div>
+
+    </form>
+    
+    {% if results %}
+    <div class="result-panel">
+        <h2>Results</h2>
+        <p>You scored {{ score }} out of {{ total }} ({{ (score/total*100)|round(1) }}%)</p>
+    </div>
+    {% endif %}
+    
+    <div>
+        <h2>Download Options</h2>
+        <a href="/download/{{ txt_filename }}">Download as Text File</a> | 
+        <a href="/download/{{ pdf_filename }}">Download as PDF</a>
     </div>
 </body>
 </html>

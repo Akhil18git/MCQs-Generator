@@ -7,6 +7,7 @@ from fpdf import FPDF
 from langchain_groq import ChatGroq
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
+from langchain_core.runnables import RunnablePassthrough
 
 # Flask app setup
 app = Flask(__name__)
@@ -20,8 +21,8 @@ os.makedirs(app.config['RESULTS_FOLDER'], exist_ok=True)
 
 # Initialize LangChain LLM
 llm = ChatGroq(
-    api_key="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",
-    model="llama-3.1-8b-instant",  # Updated model name
+    api_key="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",
+    model="llama-3.1-8b-instant",
     temperature=0.0
 )
 
@@ -39,8 +40,8 @@ Generate {num_questions} MCQs. Each should include:
 - Four answer options labeled A, B, C, and D
 - The correct answer clearly indicated at the end
 
-Format:
--- MCQ
+Format each MCQ exactly like this:
+### MCQ
 Question: [question]
 A) [option A]
 B) [option B]
@@ -50,7 +51,7 @@ Correct Answer: [correct option]
 """
 )
 
-mcq_chain = LLMChain(llm=llm, prompt=mcq_prompt)
+mcq_chain = mcq_prompt | llm
 
 # File validation
 def allowed_file(filename):
@@ -70,10 +71,46 @@ def extract_text_from_file(file_path):
             return file.read()
     return None
 
-# MCQ generation
+# Parse MCQs into a structured format
+def parse_mcqs(mcq_text):
+    mcqs = []
+    current_mcq = {}
+    question_number = 0
+    
+    for line in mcq_text.split('\n'):
+        line = line.strip()
+        if line.startswith('### MCQ'):
+            if current_mcq:
+                current_mcq['q_num'] = question_number
+                mcqs.append(current_mcq)
+                current_mcq = {}
+                question_number += 1
+        elif line.startswith('Question:'):
+            current_mcq['question'] = line.replace('Question:', '').strip()
+            current_mcq['options'] = []
+            current_mcq['q_num'] = question_number
+        elif line.startswith(('A)', 'B)', 'C)', 'D)')):
+            option_text = line[3:].strip()
+            option_letter = line[0]
+            current_mcq['options'].append({
+                'letter': option_letter,
+                'text': option_text,
+                'id': f"q{question_number+1}_{option_letter}"
+            })
+        elif line.startswith('Correct Answer:'):
+            correct = line.replace('Correct Answer:', '').strip()[0]
+            current_mcq['correct'] = correct
+    
+    if current_mcq:
+        current_mcq['q_num'] = question_number
+        mcqs.append(current_mcq)
+    
+    return mcqs
+
+# Generate MCQs with LangChain
 def generate_mcqs_with_langchain(text, num_questions):
-    response = mcq_chain.run({"context": text, "num_questions": num_questions})
-    return response.strip()
+    response = mcq_chain.invoke({"context": text, "num_questions": num_questions})
+    return response.content.strip()
 
 # Save MCQs to text file
 def save_mcqs_to_file(mcqs, filename):
@@ -83,19 +120,19 @@ def save_mcqs_to_file(mcqs, filename):
     return path
 
 # Save MCQs to PDF
-def create_pdf(mcqs, filename):
+'''def create_pdf(mcqs, filename):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
 
-    for mcq in mcqs.split("## MCQ"):
+    for mcq in mcqs.split("### MCQ"):
         if mcq.strip():
             pdf.multi_cell(0, 10, mcq.strip())
             pdf.ln(5)
 
     path = os.path.join(app.config['RESULTS_FOLDER'], filename)
     pdf.output(path)
-    return path
+    return path'''
 
 # Routes
 @app.route('/')
@@ -116,18 +153,56 @@ def generate_mcqs():
         text = extract_text_from_file(file_path)
         if text:
             num_questions = int(request.form['num_questions'])
-            mcqs = generate_mcqs_with_langchain(text, num_questions)
+            mcq_text = generate_mcqs_with_langchain(text, num_questions)
+            mcqs = parse_mcqs(mcq_text)
 
             # Save output
-            base_name = filename.rsplit('.', 1)[0]
-            txt_file = f"generated_mcqs_{base_name}.txt"
-            pdf_file = f"generated_mcqs_{base_name}.pdf"
-            save_mcqs_to_file(mcqs, txt_file)
-            create_pdf(mcqs, pdf_file)
+            #base_name = filename.rsplit('.', 1)[0]
+            #txt_file = f"generated_mcqs_{base_name}.txt"
+            #pdf_file = f"generated_mcqs_{base_name}.pdf"
+            #save_mcqs_to_file(mcq_text, txt_file)
+            #create_pdf(mcq_text, pdf_file)'''
 
-            return render_template('results.html', mcqs=mcqs, txt_filename=txt_file, pdf_filename=pdf_file)
+            return render_template('results.html', 
+                                 mcqs=mcqs, 
+                                 mcq_text=mcq_text,
+                                 #txt_filename=txt_file, 
+                                 #pdf_filename=pdf_file,
+                                 results=None,
+                                 score=0,
+                                 total=len(mcqs))
 
     return "Invalid file format or upload error."
+
+@app.route('/check_answers', methods=['POST'])
+def check_answers():
+    user_answers = request.form.to_dict()
+    mcq_text = request.form.get('mcq_text')
+    mcqs = parse_mcqs(mcq_text)
+    
+    results = {}
+    score = 0
+    
+    for mcq in mcqs:
+        user_answer = request.form.get(f"q_{mcq['q_num']}", "").upper()
+        is_correct = user_answer == mcq['correct']
+        if is_correct:
+            score += 1
+        
+        results[mcq['q_num']] = {
+            'question': mcq['question'],
+            'user_answer': user_answer,
+            'correct_answer': mcq['correct'],
+            'is_correct': is_correct,
+            'options': mcq['options']
+        }
+    
+    return render_template('results.html', 
+                         mcqs=mcqs,
+                         mcq_text=mcq_text,
+                         results=results,
+                         score=score,
+                         total=len(mcqs))
 
 @app.route('/download/<filename>')
 def download_file(filename):
