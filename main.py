@@ -20,7 +20,7 @@ if not GROQ_API_KEY:
 
 llm = ChatGroq(
     api_key=GROQ_API_KEY,
-    model='llama-3.3-70b-versatile',
+    model='openai/gpt-oss-120b',
     temperature=0.0
 )
 

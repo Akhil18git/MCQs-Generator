@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>QuizForge — AI MCQ Generator for Students</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Turn your notes into practice MCQs in seconds. Upload PDF, DOCX or TXT and let AI generate exam-ready questions.">
+  <meta name="description"
+    content="Turn your notes into practice MCQs in seconds. Upload PDF, DOCX or TXT and let AI generate exam-ready questions.">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
+
 <body>
 
   <!-- Navbar -->
@@ -90,12 +93,14 @@
       <div class="step-card">
         <div class="step-number">1</div>
         <h3>📄 Upload Your Notes</h3>
-        <p>Drop in a PDF, DOCX, or TXT file — lecture slides, textbook chapters, or your own notes all work perfectly.</p>
+        <p>Drop in a PDF, DOCX, or TXT file — lecture slides, textbook chapters, or your own notes all work perfectly.
+        </p>
       </div>
       <div class="step-card">
         <div class="step-number">2</div>
         <h3>⚙️ Configure Your Quiz</h3>
-        <p>Pick how many MCQs you want and choose a difficulty — Easy for revision, Medium for practice, or Hard to really test yourself.</p>
+        <p>Pick how many MCQs you want and choose a difficulty — Easy for revision, Medium for practice, or Hard to
+          really test yourself.</p>
       </div>
       <div class="step-card">
         <div class="step-number">3</div>
@@ -117,7 +122,8 @@
         <div class="feature-icon purple">🤖</div>
         <div>
           <h3>AI-Powered Generation</h3>
-          <p>Powered by advanced LLMs that understand your content and create relevant, exam-style questions automatically.</p>
+          <p>Powered by advanced LLMs that understand your content and create relevant, exam-style questions
+            automatically.</p>
         </div>
       </div>
       <div class="feature-card">
@@ -131,7 +137,8 @@
         <div class="feature-icon green">📚</div>
         <div>
           <h3>Any Subject, Any Format</h3>
-          <p>Physics, Chemistry, Biology, History, English — works with any subject as long as you have text content.</p>
+          <p>Physics, Chemistry, Biology, History, English — works with any subject as long as you have text content.
+          </p>
         </div>
       </div>
       <div class="feature-card">
@@ -249,7 +256,8 @@
         <div class="upload-zone" id="uploadZone">
           <div class="upload-zone-icon">📁</div>
           <p><strong>Click to upload</strong> or drag &amp; drop your file here</p>
-          <p style="font-size: 0.85rem; margin-top: 0.4rem; color: var(--text-muted);">Supports PDF, DOCX, TXT — max recommended 50 pages</p>
+          <p style="font-size: 0.85rem; margin-top: 0.4rem; color: var(--text-muted);">Supports PDF, DOCX, TXT — max
+            recommended 50 pages</p>
           <input type="file" name="file" id="file" accept=".pdf,.docx,.txt" required style="display:none;">
         </div>
 
@@ -260,7 +268,8 @@
 
         <div id="questionSection" class="form-section">
           <label for="num_questions" class="form-label-custom">How many questions do you want?</label>
-          <input class="form-input-custom" type="number" name="num_questions" id="num_questions" min="1" max="50" value="" placeholder="e.g. 10" required>
+          <input class="form-input-custom" type="number" name="num_questions" id="num_questions" min="1" max="50"
+            value="" placeholder="e.g. 10" required>
 
           <label class="form-label-custom" style="margin-top: 1.25rem;">Difficulty level</label>
           <div class="difficulty-selector">
@@ -357,4 +366,5 @@
     });
   </script>
 </body>
+
 </html>

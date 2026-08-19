@@ -1,7 +1,7 @@
 import os
 import re
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request
 import pdfplumber
 from fpdf import FPDF
 import docx
@@ -28,7 +28,7 @@ if not GROQ_API_KEY:
 
 llm = ChatGroq(
     api_key=GROQ_API_KEY,
-    model='llama-3.1-8b-instant',
+    model='openai/gpt-oss-120b',
     temperature=0.0
 )
 
@@ -88,12 +88,12 @@ def extract_text_from_file(file_path):
 # MCQ generation
 def generate_mcqs_with_langchain(text, num_questions, difficulty='medium'):
     diff_instruction = DIFFICULTY_INSTRUCTIONS.get(difficulty, DIFFICULTY_INSTRUCTIONS['medium'])
-    response = mcq_chain.run({
+    response = mcq_chain.invoke({
         "context": text,
         "num_questions": num_questions,
         "difficulty_instruction": diff_instruction
     })
-    return response.strip()
+    return response['text'].strip()
 
 
 def parse_mcqs(mcq_text):
@@ -244,15 +244,5 @@ def check_answers():
                            total=len(mcqs))
 
 
-@app.route('/download_pdf', methods=['POST'])
-def download_pdf():
-    mcq_text = request.form.get('mcq_text', '')
-    if not mcq_text:
-        return 'No MCQ content provided.', 400
-    pdf_path = create_pdf(mcq_text, 'generated_mcqs.pdf')
-    return send_file(pdf_path, as_attachment=True, download_name='generated_mcqs.pdf')
-
-
 if __name__ == '__main__':
     app.run(debug=True)
-
