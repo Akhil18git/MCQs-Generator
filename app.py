@@ -1,7 +1,9 @@
-﻿import os
+import os
+import re
 from dotenv import load_dotenv
 from flask import Flask, render_template, request
 import pdfplumber
+from fpdf import FPDF
 import docx
 from werkzeug.utils import secure_filename
 from langchain_groq import ChatGroq
@@ -26,7 +28,7 @@ if not GROQ_API_KEY:
 
 llm = ChatGroq(
     api_key=GROQ_API_KEY,
-    model='llama-3.1-8b-instant',
+    model='openai/gpt-oss-120b',
     temperature=0.0
 )
 
@@ -82,50 +84,101 @@ def extract_text_from_file(file_path):
             return file.read()
     return None
 
-def parse_mcqs(mcq_text):
-    mcqs = []
-    current_mcq = {}
-    question_number = 0
-    for line in mcq_text.split('\n'):
-        line = line.strip()
-        if line.startswith('### MCQ'):
-            if current_mcq:
-                current_mcq['q_num'] = question_number
-                mcqs.append(current_mcq)
-                current_mcq = {}
-                question_number += 1
-        elif line.startswith('Question:'):
-            current_mcq['question'] = line.replace('Question:', '').strip()
-            current_mcq['options'] = []
-            current_mcq['q_num'] = question_number
-        elif line.startswith(('A)', 'B)', 'C)', 'D)')):
-            option_text = line[3:].strip()
-            option_letter = line[0]
-            current_mcq['options'].append({
-                'letter': option_letter,
-                'text': option_text,
-                'id': f"q{question_number + 1}_{option_letter}"
-            })
-        elif line.startswith('Correct Answer:'):
-            current_mcq['correct'] = line.replace('Correct Answer:', '').strip()[0]
 
-    if current_mcq:
-        current_mcq['q_num'] = question_number
-        mcqs.append(current_mcq)
+# MCQ generation
+def generate_mcqs_with_langchain(text, num_questions, difficulty='medium'):
+    diff_instruction = DIFFICULTY_INSTRUCTIONS.get(difficulty, DIFFICULTY_INSTRUCTIONS['medium'])
+    response = mcq_chain.invoke({
+        "context": text,
+        "num_questions": num_questions,
+        "difficulty_instruction": diff_instruction
+    })
+    return response['text'].strip()
+
+
+def parse_mcqs(mcq_text):
+    """Parse raw LLM MCQ text into a structured list of MCQ objects."""
+    if not mcq_text:
+        return []
+
+    chunks = re.split(r'(?:###\s*MCQ|##\s*MCQ|--\s*MCQ|\bMCQ\s*\d*:?)', mcq_text, flags=re.IGNORECASE)
+    mcqs = []
+    q_index = 0
+
+    for chunk in chunks:
+        chunk = chunk.strip()
+        if not chunk:
+            continue
+
+        q_match = re.search(r'(?:Question\s*\d*:\s*|\*\*\s*Question\s*\d*:\s*\*\*|\d+\.\s+)?(.*?)(?=(?:\n\s*(?:[A-D][\.\)]|\([A-D]\))\s+))', chunk, re.DOTALL | re.IGNORECASE)
+        if q_match:
+            question_text = q_match.group(1).strip()
+            question_text = re.sub(r'^(?:Question\s*\d*:\s*|\*\*\s*Question\s*\d*:\s*\*\*)+', '', question_text, flags=re.IGNORECASE).strip()
+            question_text = question_text.strip('*').strip()
+        else:
+            lines = [line.strip() for line in chunk.split('\n') if line.strip()]
+            if lines:
+                question_text = re.sub(r'^(?:Question\s*\d*:\s*|\*\*\s*Question\s*\d*:\s*\*\*)+', '', lines[0], flags=re.IGNORECASE).strip()
+            else:
+                continue
+
+        options = []
+        for letter in ['A', 'B', 'C', 'D']:
+            opt_pattern = rf'(?:^|\n)\s*(?:\(?{letter}\)|\(?{letter}[\.\:\)])\s*([^\n]+(?:\n(?!\s*(?:\(?[A-D][\)\.\:]|Correct\s+Answer|Answer))[^\n]+)*)'
+            opt_match = re.search(opt_pattern, chunk, re.IGNORECASE)
+            if opt_match:
+                opt_text = opt_match.group(1).strip().strip('*').strip()
+                options.append({
+                    'letter': letter,
+                    'text': opt_text,
+                    'id': f'q_{q_index}_opt_{letter}'
+                })
+
+        correct_match = re.search(r'(?:Correct\s*Answer|Answer|Correct)\s*:\s*(?:\(?([A-D])\)?|[A-D]\)?\s*([A-D]))', chunk, re.IGNORECASE)
+        correct_letter = ''
+        if correct_match:
+            correct_letter = (correct_match.group(1) or correct_match.group(2) or '').upper()
+        else:
+            ca_search = re.search(r'(?:Correct\s*Answer|Answer|Correct)[^\n]*?([A-D])\b', chunk, re.IGNORECASE)
+            if ca_search:
+                correct_letter = ca_search.group(1).upper()
+
+        if question_text and len(options) >= 2:
+            mcqs.append({
+                'q_num': q_index,
+                'question': question_text,
+                'options': options,
+                'correct': correct_letter
+            })
+            q_index += 1
 
     return mcqs
 
 
-def generate_mcqs_with_langchain(text, num_questions, difficulty='medium'):
-    difficulty = difficulty if difficulty in DIFFICULTY_INSTRUCTIONS else 'medium'
-    response = mcq_chain.run({
-        'context': text,
-        'num_questions': num_questions,
-        'difficulty_instruction': DIFFICULTY_INSTRUCTIONS[difficulty],
-    })
-    return response.strip()
+# Save MCQs to text file
+def save_mcqs_to_file(mcqs, filename):
+    path = os.path.join(app.config['RESULTS_FOLDER'], filename)
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(mcqs)
+    return path
 
 
+# Save MCQs to PDF
+def create_pdf(mcqs, filename):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    for mcq in mcqs.split("### MCQ"):
+        if mcq.strip():
+            pdf.multi_cell(0, 10, mcq.strip())
+            pdf.ln(5)
+
+    path = os.path.join(app.config['RESULTS_FOLDER'], filename)
+    pdf.output(path)
+    return path
+
+# Routes
 @app.route('/')
 def index():
     return render_template('index.html')
