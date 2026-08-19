@@ -287,84 +287,23 @@
               <span class="difficulty-desc">Exam practice</span>
             </label>
 
-            <input type="radio" name="difficulty" id="diff_hard" value="hard" class="difficulty-input">
-            <label for="diff_hard" class="difficulty-option">
-              <span class="difficulty-icon">🔥</span>
-              <span class="difficulty-name">Hard</span>
-              <span class="difficulty-desc">Challenge mode</span>
-            </label>
-          </div>
-
-          <button type="submit" class="btn-generate" id="generateBtn">
-            ⚡ Generate My Quiz
-          </button>
-        </div>
-      </form>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <p>Powered by AI · Made with <span class="footer-heart">❤️</span> by Akhil</p>
-    <p style="margin-top: 0.35rem; font-size: 0.8rem;">QuizForge — Study smarter, score higher.</p>
-  </footer>
-
-  <!-- Loading Overlay -->
-  <div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner"></div>
-    <div class="loading-text">Generating your quiz…</div>
-    <div class="loading-sub">Our AI is reading your notes and crafting questions</div>
+<body>
+  <div class='container'>
+    <h1>Upload a document to generate MCQs</h1>
+    <form method='POST' action='/generate' enctype='multipart/form-data'>
+      <label for='file'>Choose a file (PDF, DOCX, TXT):</label>
+      <input type='file' name='file' id='file' required>
+      <label for='num_questions'>Number of questions:</label>
+      <input type='number' name='num_questions' id='num_questions' min='1' value='5' required>
+      <label for='difficulty'>Difficulty:</label>
+      <select name='difficulty' id='difficulty'>
+        <option value='easy'>Easy</option>
+        <option value='medium' selected>Medium</option>
+        <option value='hard'>Hard</option>
+      </select>
+      <button type='submit'>Generate MCQs</button>
+    </form>
   </div>
-
-  <script>
-    const fileInput = document.getElementById('file');
-    const uploadZone = document.getElementById('uploadZone');
-    const questionSection = document.getElementById('questionSection');
-    const fileNameDisplay = document.getElementById('fileNameDisplay');
-    const fileNameText = document.getElementById('fileNameText');
-    const mcqForm = document.getElementById('mcqForm');
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    const navbar = document.getElementById('navbar');
-
-    uploadZone.addEventListener('click', () => fileInput.click());
-
-    uploadZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      uploadZone.classList.add('dragover');
-    });
-
-    uploadZone.addEventListener('dragleave', () => {
-      uploadZone.classList.remove('dragover');
-    });
-
-    uploadZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      uploadZone.classList.remove('dragover');
-      if (e.dataTransfer.files.length) {
-        fileInput.files = e.dataTransfer.files;
-        handleFileSelect();
-      }
-    });
-
-    fileInput.addEventListener('change', handleFileSelect);
-
-    function handleFileSelect() {
-      if (fileInput.files.length > 0) {
-        fileNameText.textContent = fileInput.files[0].name;
-        fileNameDisplay.classList.add('show');
-        questionSection.classList.add('show');
-        uploadZone.style.display = 'none';
-      }
-    }
-
-    mcqForm.addEventListener('submit', () => {
-      loadingOverlay.classList.add('show');
-    });
-
-    window.addEventListener('scroll', () => {
-      navbar.classList.toggle('scrolled', window.scrollY > 20);
-    });
-  </script>
 </body>
 
 </html>
