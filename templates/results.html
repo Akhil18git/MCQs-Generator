@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -100,12 +100,13 @@
         {% endfor %}
       </div>
 
-      <div class="quiz-actions">
+      <div class="quiz-actions" style="display: flex; gap: 1rem; justify-content: center; align-items: center; flex-wrap: wrap;">
         {% if results %}
         <a href="/" class="btn-try-again">🔄 Try Another Quiz</a>
         {% else %}
         <button class="btn-check" type="submit" id="submitBtn">✅ Check My Answers</button>
         {% endif %}
+        <button type="submit" formaction="/download_pdf" formmethod="post" class="btn-outline-custom" style="padding: 0.75rem 1.5rem; border-radius: 9999px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">📥 Download as PDF</button>
       </div>
     </form>
 
@@ -175,6 +176,5 @@
     });
   </script>
   {% endif %}
-
 </body>
 </html>
