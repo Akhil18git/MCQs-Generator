@@ -89,8 +89,7 @@ def main():
         print('No text extracted.')
         return
 
-    response = mcq_chain.invoke({'context': text, 'num_questions': NUM_QUESTIONS})
-    mcqs = response['text'].strip()
+    mcqs = mcq_chain.run({'context': text, 'num_questions': NUM_QUESTIONS}).strip()
     base_name = os.path.basename(UPLOAD_FILE).rsplit('.', 1)[0]
     save_txt(mcqs, f'generated_mcqs_{base_name}.txt')
     save_pdf(mcqs, f'generated_mcqs_{base_name}.pdf')

@@ -118,12 +118,12 @@ def parse_mcqs(mcq_text):
 
 def generate_mcqs_with_langchain(text, num_questions, difficulty='medium'):
     difficulty = difficulty if difficulty in DIFFICULTY_INSTRUCTIONS else 'medium'
-    response = mcq_chain.invoke({
+    response = mcq_chain.run({
         'context': text,
         'num_questions': num_questions,
         'difficulty_instruction': DIFFICULTY_INSTRUCTIONS[difficulty],
     })
-    return response['text'].strip()
+    return response.strip()
 
 
 @app.route('/')
