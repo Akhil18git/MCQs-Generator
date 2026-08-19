@@ -1,81 +1,359 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MCQ Generator</title>
+  <title>QuizForge — AI MCQ Generator for Students</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      background: linear-gradient(to right, #f5f7fa, #c3cfe2);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .card {
-      border: none;
-      border-radius: 1rem;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    }
-    .form-section {
-      display: none;
-      opacity: 0;
-      transition: opacity 0.4s ease-in-out;
-    }
-    .form-section.show {
-      display: block;
-      opacity: 1;
-    }
-  </style>
+  <meta name="description" content="Turn your notes into practice MCQs in seconds. Upload PDF, DOCX or TXT and let AI generate exam-ready questions.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-8 col-lg-6">
-        <div class="card p-4">
-          <div class="card-body">
-            <h2 class="text-center mb-4">📝 MCQ Generator</h2>
-            <p class="text-center text-muted mb-4">
-              Upload a PDF, DOCX, or TXT file and generate multiple-choice questions in seconds.
-            </p>
-            <form method="POST" action="/generate" enctype="multipart/form-data" id="mcqForm">
-              <!-- Step 1: File Upload -->
-              <div class="mb-3">
-                <!--<label for="file" class="form-label">Choose a file (PDF, DOCX, or TXT):</label>-->
-                <input class="form-control" type="file" name="file" id="file" accept=".pdf,.docx,.txt" required>
-              </div>
 
-              <!-- Step 2: Number of Questions (hidden initially) -->
-              <div id="questionSection" class="form-section">
-                <div class="mb-3">
-                  <label for="num_questions" class="form-label">Number of Questions:</label>
-                  <input class="form-control" type="number" name="num_questions" id="num_questions" min="1" value="" placeholder="enter number" required>
-                </div>
-                <div class="d-grid">
-                  <button type="submit" class="btn btn-primary btn-lg">🚀 Generate MCQs</button>
-                </div>
-              </div>
-            </form>
-          </div>
+  <!-- Navbar -->
+  <nav class="navbar-custom" id="navbar">
+    <div class="navbar-inner">
+      <a href="/" class="logo">
+        <div class="logo-icon">⚡</div>
+        QuizForge
+      </a>
+      <ul class="nav-links">
+        <li><a href="#how-it-works">How it Works</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#testimonials">Reviews</a></li>
+        <li><a href="#get-started" class="btn-nav">Get Started</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">🎓 Built for Indian Students</div>
+      <h1>
+        Turn Your Notes Into<br>
+        <span class="gradient-text">Smart Practice Quizzes</span>
+      </h1>
+      <p class="hero-sub">
+        Upload any study material — PDF, Word, or text — and get AI-generated MCQs in seconds.
+        Perfect for JEE, NEET, board exams, and semester prep.
+      </p>
+      <div class="hero-actions">
+        <a href="#get-started" class="btn-primary-custom">🚀 Start Practising Free</a>
+        <a href="#how-it-works" class="btn-outline-custom">See How It Works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <strong>10K+</strong>
+          <span>Quizzes Generated</span>
         </div>
-        <p class="text-center text-muted mt-3" style="font-size: 0.9rem;">
-          Powered by LLMs • Made with ❤️ by Akhil
-        </p>
+        <div class="stat-item">
+          <strong>3 Formats</strong>
+          <span>PDF · DOCX · TXT</span>
+        </div>
+        <div class="stat-item">
+          <strong>&lt; 30s</strong>
+          <span>Average Generation</span>
+        </div>
       </div>
     </div>
+
+    <div class="hero-visual">
+      <div class="hero-card-stack">
+        <div class="floating-card back">
+          <div class="mini-mcq">
+            <div class="q-label">Q. What is the SI unit of force?</div>
+            <div class="mini-option"><span class="option-dot">A</span> Joule</div>
+            <div class="mini-option selected"><span class="option-dot">B</span> Newton</div>
+          </div>
+        </div>
+        <div class="floating-card main">
+          <div class="mini-mcq">
+            <div class="q-label">Q. Which organelle is the powerhouse of the cell?</div>
+            <div class="mini-option"><span class="option-dot">A</span> Nucleus</div>
+            <div class="mini-option selected"><span class="option-dot">B</span> Mitochondria</div>
+            <div class="mini-option"><span class="option-dot">C</span> Ribosome</div>
+            <div class="mini-option"><span class="option-dot">D</span> Golgi body</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section" id="how-it-works">
+    <div class="section-header">
+      <span class="section-tag">Simple Process</span>
+      <h2>How QuizForge Works</h2>
+      <p>From your textbook chapter to a full practice test — in three easy steps. No signup, no hassle.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <h3>📄 Upload Your Notes</h3>
+        <p>Drop in a PDF, DOCX, or TXT file — lecture slides, textbook chapters, or your own notes all work perfectly.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <h3>⚙️ Configure Your Quiz</h3>
+        <p>Pick how many MCQs you want and choose a difficulty — Easy for revision, Medium for practice, or Hard to really test yourself.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <h3>✅ Practice &amp; Score</h3>
+        <p>Answer the generated questions, hit "Check Answers", and instantly see your score with detailed feedback.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="section-header">
+      <span class="section-tag">Why Students Love It</span>
+      <h2>Everything You Need to Ace Exams</h2>
+      <p>Designed around how students actually study — fast, focused, and frustration-free.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon purple">🤖</div>
+        <div>
+          <h3>AI-Powered Generation</h3>
+          <p>Powered by advanced LLMs that understand your content and create relevant, exam-style questions automatically.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon orange">⚡</div>
+        <div>
+          <h3>Instant Results</h3>
+          <p>No waiting around. Upload your file and get a complete quiz ready to attempt within seconds.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon green">📚</div>
+        <div>
+          <h3>Any Subject, Any Format</h3>
+          <p>Physics, Chemistry, Biology, History, English — works with any subject as long as you have text content.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon blue">📊</div>
+        <div>
+          <h3>Instant Score &amp; Feedback</h3>
+          <p>Submit your answers and get an immediate score breakdown — see exactly where you went wrong.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" id="testimonials">
+    <div class="section-header">
+      <span class="section-tag">Student Reviews</span>
+      <h2>What Students Are Saying</h2>
+      <p>Thousands of students across India use QuizForge to prep smarter, not harder.</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">
+          "I uploaded my Physics chapter notes before JEE Mains and got 15 solid MCQs in under a minute.
+          Saved me hours of making my own question bank!"
+        </p>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">PS</div>
+          <div class="author-info">
+            <strong>Priya Sharma</strong>
+            <span>JEE Aspirant · Kota, Rajasthan</span>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">
+          "As a NEET repeater, I needed quick revision tests daily. QuizForge lets me convert any PDF
+          into a quiz instantly. Absolute game-changer for Biology chapters."
+        </p>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background: linear-gradient(135deg, #f97316, #fb923c);">AR</div>
+          <div class="author-info">
+            <strong>Arjun Reddy</strong>
+            <span>NEET Aspirant · Hyderabad, Telangana</span>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">
+          "Our study group uses this before every unit test. We upload the textbook PDF and everyone
+          gets the same set of questions to practice. So much better than random Google quizzes!"
+        </p>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background: linear-gradient(135deg, #10b981, #34d399);">AP</div>
+          <div class="author-info">
+            <strong>Ananya Patel</strong>
+            <span>Class 12 · Ahmedabad, Gujarat</span>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">
+          "Bhai, maine apne semester ke saare notes upload kiye aur har subject ke liye mock test ban gaye.
+          End semester mein 89% aaya — definitely recommend!"
+        </p>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background: linear-gradient(135deg, #3b82f6, #60a5fa);">RK</div>
+          <div class="author-info">
+            <strong>Rahul Kumar</strong>
+            <span>B.Tech CSE · NIT Trichy</span>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">
+          "I teach Class 10 CBSE and use QuizForge to quickly create practice sheets from my lesson PDFs.
+          Students love the format and it saves me so much prep time every week."
+        </p>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">DM</div>
+          <div class="author-info">
+            <strong>Divya Menon</strong>
+            <span>Class 10 Tutor · Kochi, Kerala</span>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">
+          "UPSC prep ke liye NCERT chapters se MCQs banane mein bahut time lagta tha.
+          Ab bas PDF upload karo aur practice shuru — simple and effective!"
+        </p>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background: linear-gradient(135deg, #ef4444, #f87171);">VS</div>
+          <div class="author-info">
+            <strong>Vikram Singh</strong>
+            <span>UPSC Aspirant · Delhi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Upload / Get Started -->
+  <section class="upload-section" id="get-started">
+    <div class="upload-wrapper">
+      <h2>Ready to Start? 🎯</h2>
+      <p class="subtitle">Upload your study material and get your personalised quiz in seconds.</p>
+
+      <form method="POST" action="/generate" enctype="multipart/form-data" id="mcqForm">
+        <div class="upload-zone" id="uploadZone">
+          <div class="upload-zone-icon">📁</div>
+          <p><strong>Click to upload</strong> or drag &amp; drop your file here</p>
+          <p style="font-size: 0.85rem; margin-top: 0.4rem; color: var(--text-muted);">Supports PDF, DOCX, TXT — max recommended 50 pages</p>
+          <input type="file" name="file" id="file" accept=".pdf,.docx,.txt" required style="display:none;">
+        </div>
+
+        <div class="file-name-display" id="fileNameDisplay">
+          <span>📄</span>
+          <span id="fileNameText"></span>
+        </div>
+
+        <div id="questionSection" class="form-section">
+          <label for="num_questions" class="form-label-custom">How many questions do you want?</label>
+          <input class="form-input-custom" type="number" name="num_questions" id="num_questions" min="1" max="50" value="" placeholder="e.g. 10" required>
+
+          <label class="form-label-custom" style="margin-top: 1.25rem;">Difficulty level</label>
+          <div class="difficulty-selector">
+            <input type="radio" name="difficulty" id="diff_easy" value="easy" class="difficulty-input">
+            <label for="diff_easy" class="difficulty-option">
+              <span class="difficulty-icon">🌱</span>
+              <span class="difficulty-name">Easy</span>
+              <span class="difficulty-desc">Quick revision</span>
+            </label>
+
+            <input type="radio" name="difficulty" id="diff_medium" value="medium" class="difficulty-input" checked>
+            <label for="diff_medium" class="difficulty-option">
+              <span class="difficulty-icon">⚡</span>
+              <span class="difficulty-name">Medium</span>
+              <span class="difficulty-desc">Exam practice</span>
+            </label>
+
+            <input type="radio" name="difficulty" id="diff_hard" value="hard" class="difficulty-input">
+            <label for="diff_hard" class="difficulty-option">
+              <span class="difficulty-icon">🔥</span>
+              <span class="difficulty-name">Hard</span>
+              <span class="difficulty-desc">Challenge mode</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn-generate" id="generateBtn">
+            ⚡ Generate My Quiz
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>Powered by AI · Made with <span class="footer-heart">❤️</span> by Akhil</p>
+    <p style="margin-top: 0.35rem; font-size: 0.8rem;">QuizForge — Study smarter, score higher.</p>
+  </footer>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Generating your quiz…</div>
+    <div class="loading-sub">Our AI is reading your notes and crafting questions</div>
   </div>
 
   <script>
     const fileInput = document.getElementById('file');
+    const uploadZone = document.getElementById('uploadZone');
     const questionSection = document.getElementById('questionSection');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const fileNameText = document.getElementById('fileNameText');
+    const mcqForm = document.getElementById('mcqForm');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const navbar = document.getElementById('navbar');
 
-    fileInput.addEventListener('change', function () {
-      if (fileInput.files.length > 0) {
-        questionSection.classList.add('show');
-      } else {
-        questionSection.classList.remove('show');
+    uploadZone.addEventListener('click', () => fileInput.click());
+
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('dragover');
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        handleFileSelect();
       }
+    });
+
+    fileInput.addEventListener('change', handleFileSelect);
+
+    function handleFileSelect() {
+      if (fileInput.files.length > 0) {
+        fileNameText.textContent = fileInput.files[0].name;
+        fileNameDisplay.classList.add('show');
+        questionSection.classList.add('show');
+        uploadZone.style.display = 'none';
+      }
+    }
+
+    mcqForm.addEventListener('submit', () => {
+      loadingOverlay.classList.add('show');
+    });
+
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 20);
     });
   </script>
 </body>

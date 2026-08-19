@@ -1,102 +1,180 @@
-<!DOCTYPE html>
-<html>
+﻿<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Generated MCQs</title>
-    <style>
-        .mcq-container {
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .question {
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .option {
-            margin: 5px 0;
-        }
-        .correct {
-            color: green;
-            font-weight: bold;
-        }
-        .incorrect {
-            color: red;
-        }
-        .result-panel {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>{% if results %}Quiz Results{% else %}Your Quiz{% endif %} — QuizForge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
-    <h1>Generated Multiple Choice Questions</h1>
-    
-    <form id="mcqForm" method="post" action="/check_answers">
-        <input type="hidden" name="mcq_text" value="{{ mcq_text }}">
-        
-        {% for mcq in mcqs %}
-        <div class="mcq-container">
-            <div class="question">{{ mcq['q_num']+1 }}. {{ mcq.question }}</div>
-            {% for option in mcq.options %}
-            <div class="option">
-                <input type="radio" 
-                       id="{{ option.id }}" 
-                       name="q_{{ mcq['q_num'] +1 }}"
-                       value="{{ option.letter }}"
-                       {% if results %}
-                        {% if results[mcq['q_num']]['user_answer'] == option.letter %} checked
-                        disabled
-                        {% endif %}
-                       {% endif %}>
-                <label for="{{ option.id }}">{{ option.letter }} {{ option.text }}</label>
-            </div>
-            {% endfor %}
-            
-            {% if results %}
-            <div class="feedback">
-                {% set result = results[mcq['q_num']] %}
-                {% if result['user_answer'] == result['correct_answer'] %}
-                <p class="correct">Correct! The answer is {{ result['correct_answer'] }}.</p>
-                {% else %}
-                <p class="incorrect">
-                    Your answer: {{ result['user_answer'] if result['user_answer'] else "Not answered" }}. 
-                    Correct answer: {{ result['correct_answer'] }}.
-                </p>
-                {% endif %}
-            </div>
-            {% endif %}
-        </div>
-        {% endfor %}
-        
-        <div class="text-center mt-4">
-            {% if results %}
-            <!-- After checking answers -->
-             <button><a href="/" class="btn btn-outline-primary btn-lg">Try Again</a></button>
-            {% else %}
-            <!-- Before checking answers (during quiz) -->
-            <button class="btn btn-success btn-lg" type="submit">Check Answers</button>
-            {% endif %}
-        </div>
-        <hr>
 
-</div>
+  <!-- Navbar -->
+  <nav class="navbar-custom scrolled">
+    <div class="navbar-inner">
+      <a href="/" class="logo">
+        <div class="logo-icon">⚡</div>
+        QuizForge
+      </a>
+      <ul class="nav-links">
+        <li><a href="/" class="btn-nav">← Back to Home</a></li>
+      </ul>
+    </div>
+  </nav>
 
-    </form>
-    
-    {% if results %}
-    <div class="result-panel">
-        <h2>Results</h2>
-        <p>You scored {{ score }} out of {{ total }} ({{ (score/total*100)|round(1) }}%)</p>
+  <div class="quiz-page">
+
+    <!-- Header -->
+    <div class="quiz-header">
+      {% if results %}
+      <h1>🎉 Quiz Complete!</h1>
+      <p>
+        Here's how you performed. Review your answers below.
+        {% if difficulty %}
+        <span class="difficulty-badge difficulty-{{ difficulty }}">{{ difficulty|capitalize }} level</span>
+        {% endif %}
+      </p>
+      {% else %}
+      <h1>📝 Your Practice Quiz</h1>
+      <p>
+        Read each question carefully and select the best answer. Good luck!
+        {% if difficulty %}
+        <span class="difficulty-badge difficulty-{{ difficulty }}">{{ difficulty|capitalize }} level</span>
+        {% endif %}
+      </p>
+      {% endif %}
+    </div>
+
+    <!-- Progress bar (shown during quiz) -->
+    {% if not results %}
+    <div class="quiz-progress-bar">
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      </div>
+      <div class="progress-label">
+        <span id="answeredCount">0 answered</span>
+        <span>{{ total }} questions total</span>
+      </div>
     </div>
     {% endif %}
-    
-    <div>
-        <h2>Download Options</h2>
-        <a href="/download/{{ txt_filename }}">Download as Text File</a> | 
-        <a href="/download/{{ pdf_filename }}">Download as PDF</a>
+
+    <form id="mcqForm" method="post" action="/check_answers">
+      <input type="hidden" name="mcq_text" value="{{ mcq_text }}">
+      <input type="hidden" name="difficulty" value="{{ difficulty or 'medium' }}">
+
+      <div class="quiz-container">
+        {% for mcq in mcqs %}
+        <div class="mcq-card{% if results %}{% set result = results[mcq['q_num']] %}{% if result['is_correct'] %} answered-correct{% else %} answered-wrong{% endif %}{% endif %}">
+          <div class="mcq-number">{{ mcq['q_num'] + 1 }}</div>
+          <div class="mcq-question">{{ mcq.question }}</div>
+
+          <div class="options-list">
+            {% for option in mcq.options %}
+            <div class="option-item{% if results %}{% set result = results[mcq['q_num']] %}{% if option.letter == result['correct_answer'] %} correct-option{% elif result['user_answer'] == option.letter and not result['is_correct'] %} wrong-selected{% endif %}{% endif %}">
+              <input type="radio"
+                     id="{{ option.id }}"
+                     name="q_{{ mcq['q_num'] }}"
+                     value="{{ option.letter }}"
+                     {% if results %}
+                     disabled
+                     {% if results[mcq['q_num']]['user_answer'] == option.letter %} checked{% endif %}
+                     {% endif %}>
+              <label class="option-label" for="{{ option.id }}">
+                <span class="option-letter">{{ option.letter }}</span>
+                {{ option.text }}
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+
+          {% if results %}
+          {% set result = results[mcq['q_num']] %}
+          <div class="feedback-box {% if result['is_correct'] %}correct{% else %}incorrect{% endif %}">
+            {% if result['is_correct'] %}
+              ✅ Correct! Well done.
+            {% else %}
+              ❌ Your answer: {{ result['user_answer'] if result['user_answer'] else "Not answered" }} · Correct: {{ result['correct_answer'] }}
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="quiz-actions">
+        {% if results %}
+        <a href="/" class="btn-try-again">🔄 Try Another Quiz</a>
+        {% else %}
+        <button class="btn-check" type="submit" id="submitBtn">✅ Check My Answers</button>
+        {% endif %}
+      </div>
+    </form>
+
+    {% if results %}
+    <div class="score-panel">
+      <div class="score-card">
+        {% set pct = (score / total * 100)|round(1) if total > 0 else 0 %}
+        {% if pct >= 80 %}
+          <span class="score-emoji">🏆</span>
+          <h2>Outstanding!</h2>
+          <p class="score-message">You're exam-ready. Keep this momentum going!</p>
+        {% elif pct >= 60 %}
+          <span class="score-emoji">💪</span>
+          <h2>Good Effort!</h2>
+          <p class="score-message">Solid progress — review the ones you missed and try again.</p>
+        {% elif pct >= 40 %}
+          <span class="score-emoji">📖</span>
+          <h2>Keep Going!</h2>
+          <p class="score-message">Re-read the material and give it another shot. You've got this!</p>
+        {% else %}
+          <span class="score-emoji">🌱</span>
+          <h2>Room to Grow!</h2>
+          <p class="score-message">Every attempt makes you stronger. Review and come back stronger!</p>
+        {% endif %}
+        <div class="score-fraction">{{ score }} / {{ total }}</div>
+        <div class="score-percent">{{ pct }}% correct</div>
+      </div>
     </div>
+    {% endif %}
+
+  </div>
+
+  <footer class="footer">
+    <p>Powered by AI · Made with <span class="footer-heart">❤️</span> by Akhil</p>
+  </footer>
+
+  {% if not results %}
+  <script>
+    const totalQuestions = {{ total }};
+    const radios = document.querySelectorAll('input[type="radio"]');
+    const progressFill = document.getElementById('progressFill');
+    const answeredCount = document.getElementById('answeredCount');
+
+    function updateProgress() {
+      const answered = new Set();
+      radios.forEach(r => {
+        if (r.checked) answered.add(r.name);
+      });
+      const count = answered.size;
+      const pct = totalQuestions > 0 ? (count / totalQuestions * 100) : 0;
+      progressFill.style.width = pct + '%';
+      answeredCount.textContent = count + ' of ' + totalQuestions + ' answered';
+    }
+
+    radios.forEach(r => r.addEventListener('change', updateProgress));
+
+    document.getElementById('mcqForm').addEventListener('submit', function(e) {
+      const answered = new Set();
+      radios.forEach(r => { if (r.checked) answered.add(r.name); });
+      if (answered.size < totalQuestions) {
+        e.preventDefault();
+        const remaining = totalQuestions - answered.size;
+        if (confirm('You have ' + remaining + ' unanswered question(s). Submit anyway?')) {
+          this.submit();
+        }
+      }
+    });
+  </script>
+  {% endif %}
+
 </body>
 </html>
