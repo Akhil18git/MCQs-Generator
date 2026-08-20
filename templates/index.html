@@ -31,7 +31,7 @@
   <!-- Hero -->
   <section class="hero">
     <div class="hero-content">
-      <div class="hero-badge">🎓 Built for Indian Students</div>
+      <div class="hero-badge">🎓 Built for Students</div>
       <h1>
         Turn Your Notes Into<br>
         <span class="gradient-text">Smart Practice Quizzes</span>
@@ -253,13 +253,13 @@
       <p class="subtitle">Upload your study material and get your personalised quiz in seconds.</p>
 
       <form method="POST" action="/generate" enctype="multipart/form-data" id="mcqForm">
-        <div class="upload-zone" id="uploadZone">
+        <label class="upload-zone" id="uploadZone" for="file" style="display: block;">
           <div class="upload-zone-icon">📁</div>
           <p><strong>Click to upload</strong> or drag &amp; drop your file here</p>
           <p style="font-size: 0.85rem; margin-top: 0.4rem; color: var(--text-muted);">Supports PDF, DOCX, TXT — max
             recommended 50 pages</p>
           <input type="file" name="file" id="file" accept=".pdf,.docx,.txt" required style="display:none;">
-        </div>
+        </label>
 
         <div class="file-name-display" id="fileNameDisplay">
           <span>📄</span>
@@ -326,7 +326,7 @@
     const loadingOverlay = document.getElementById('loadingOverlay');
     const navbar = document.getElementById('navbar');
 
-    uploadZone.addEventListener('click', () => fileInput.click());
+
 
     uploadZone.addEventListener('dragover', (e) => {
       e.preventDefault();

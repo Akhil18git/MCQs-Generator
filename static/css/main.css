@@ -1232,6 +1232,24 @@ body {
 }
 
 @media (max-width: 480px) {
+  .navbar-inner {
+    padding: 0 1rem;
+  }
+
+  .logo {
+    font-size: 1.1rem;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .btn-nav {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
   .upload-wrapper {
     padding: 1.75rem 1.25rem;
   }
