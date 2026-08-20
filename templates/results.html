@@ -2,10 +2,10 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <title>{% if results %}Quiz Results{% else %}Your Quiz{% endif %} — QuizForge</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Quiz Results</title>
+  <link rel='stylesheet' href='{{ url_for("static", filename="css/main.css") }}'>
 </head>
 
 <body>
@@ -46,17 +46,11 @@
       {% endif %}
     </div>
 
-    <!-- Progress bar (shown during quiz) -->
-    {% if not results %}
-    <div class="quiz-progress-bar">
-      <div class="progress-track">
-        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-      </div>
-      <div class="progress-label">
-        <span id="answeredCount">0 answered</span>
-        <span>{{ total }} questions total</span>
-      </div>
-    </div>
+<body>
+  <div class='container'>
+    <h1>Generated MCQs</h1>
+    {% if results %}
+    <h2>Score: {{ score }} / {{ total }}</h2>
     {% endif %}
 
     <form id="mcqForm" method="post" action="/check_answers">
@@ -98,15 +92,14 @@
           {% endif %}
         </div>
         {% endfor %}
-      </div>
-
-      <div class="quiz-actions">
         {% if results %}
-        <a href="/" class="btn-try-again">🔄 Try Another Quiz</a>
-        {% else %}
-        <button class="btn-check" type="submit" id="submitBtn">✅ Check My Answers</button>
+        <p><strong>Correct answer:</strong> {{ results[mcq['q_num']]['correct_answer'] }}</p>
         {% endif %}
       </div>
+      {% endfor %}
+      {% if not results %}
+      <button type='submit'>Check Answers</button>
+      {% endif %}
     </form>
 
     {% if results %}
@@ -135,7 +128,6 @@
       </div>
     </div>
     {% endif %}
-
   </div>
 
   <footer class="footer">
