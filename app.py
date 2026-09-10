@@ -7,7 +7,6 @@ from fpdf import FPDF
 import docx
 from werkzeug.utils import secure_filename
 from langchain_groq import ChatGroq
-from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 
 app = Flask(__name__)
@@ -28,7 +27,7 @@ if not GROQ_API_KEY:
 
 llm = ChatGroq(
     api_key=GROQ_API_KEY,
-    model='openai/gpt-oss-120b',
+    model='llama-3.3-70b-versatile',
     temperature=0.0
 )
 
@@ -64,7 +63,7 @@ Correct Answer: [correct option]
 '''
 )
 
-mcq_chain = LLMChain(llm=llm, prompt=mcq_prompt)
+mcq_chain = mcq_prompt | llm
 
 
 def allowed_file(filename):
@@ -93,7 +92,11 @@ def generate_mcqs_with_langchain(text, num_questions, difficulty='medium'):
         "num_questions": num_questions,
         "difficulty_instruction": diff_instruction
     })
-    return response['text'].strip()
+    if hasattr(response, 'content'):
+        return response.content.strip()
+    if isinstance(response, dict) and 'text' in response:
+        return response['text'].strip()
+    return str(response).strip()
 
 
 def parse_mcqs(mcq_text):
@@ -201,7 +204,20 @@ def generate_mcqs():
             difficulty = request.form.get('difficulty', 'medium')
             if difficulty not in DIFFICULTY_INSTRUCTIONS:
                 difficulty = 'medium'
-            mcq_text = generate_mcqs_with_langchain(text, num_questions, difficulty)
+            try:
+                mcq_text = generate_mcqs_with_langchain(text, num_questions, difficulty)
+            except Exception as e:
+                error_msg = str(e)
+                if 'invalid_api_key' in error_msg.lower() or '401' in error_msg:
+                    return (
+                        '<h3>Groq Authentication Error (401)</h3>'
+                        '<p>Your <code>GROQ_API_KEY</code> in <code>.env</code> is invalid or expired.</p>'
+                        '<p>Please generate a new API key at <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a> '
+                        'and paste it into your <code>.env</code> file, then restart the application.</p>'
+                        '<br><a href="/">Go Back</a>'
+                    ), 401
+                return f'<h3>Error generating MCQs</h3><p>{error_msg}</p><br><a href="/">Go Back</a>', 500
+
             mcqs = parse_mcqs(mcq_text)
             return render_template('results.html',
                                    mcqs=mcqs,

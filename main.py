@@ -1,10 +1,10 @@
 import os
+import sys
 from dotenv import load_dotenv
 import pdfplumber
 import docx
 from fpdf import FPDF
 from langchain_groq import ChatGroq
-from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 
 load_dotenv()
@@ -20,7 +20,7 @@ if not GROQ_API_KEY:
 
 llm = ChatGroq(
     api_key=GROQ_API_KEY,
-    model='openai/gpt-oss-120b',
+    model='llama-3.3-70b-versatile',
     temperature=0.0
 )
 
@@ -48,10 +48,12 @@ Correct Answer: [correct option]
 '''
 )
 
-mcq_chain = LLMChain(llm=llm, prompt=mcq_prompt)
+mcq_chain = mcq_prompt | llm
 
 
 def extract_text(file_path):
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"File not found: {file_path}")
     ext = file_path.rsplit('.', 1)[-1].lower()
     if ext == 'pdf':
         with pdfplumber.open(file_path) as pdf:
@@ -62,7 +64,7 @@ def extract_text(file_path):
     if ext == 'txt':
         with open(file_path, 'r', encoding='utf-8') as f:
             return f.read()
-    raise ValueError('Unsupported file type')
+    raise ValueError(f"Unsupported file type: .{ext}. Supported formats: PDF, DOCX, TXT")
 
 
 def save_txt(mcqs, filename):
@@ -84,15 +86,40 @@ def save_pdf(mcqs, filename):
 
 
 def main():
-    text = extract_text(UPLOAD_FILE)
-    if not text:
-        print('No text extracted.')
+    target_file = sys.argv[1] if len(sys.argv) > 1 else UPLOAD_FILE
+    if target_file == 'file-here' or not os.path.exists(target_file):
+        print("Error: No valid input file specified.")
+        print("Usage:")
+        print("  py main.py <path_to_file.pdf|docx|txt>")
+        print("  Or update UPLOAD_FILE in main.py with your file path.")
         return
 
-    mcqs = mcq_chain.run({'context': text, 'num_questions': NUM_QUESTIONS}).strip()
-    base_name = os.path.basename(UPLOAD_FILE).rsplit('.', 1)[0]
-    save_txt(mcqs, f'generated_mcqs_{base_name}.txt')
-    save_pdf(mcqs, f'generated_mcqs_{base_name}.pdf')
+    text = extract_text(target_file)
+    if not text:
+        print('No text extracted from file.')
+        return
+
+    print(f"Generating {NUM_QUESTIONS} MCQs from {target_file}...")
+    try:
+        response = mcq_chain.invoke({'context': text, 'num_questions': NUM_QUESTIONS})
+        mcqs = response.content.strip() if hasattr(response, 'content') else str(response).strip()
+    except Exception as e:
+        error_msg = str(e)
+        if '401' in error_msg or 'invalid_api_key' in error_msg.lower():
+            print("\n[Groq Auth Error] Your GROQ_API_KEY in .env is invalid or expired.")
+            print("Please create a free API key at https://console.groq.com/keys and update .env.")
+        else:
+            print(f"\nError: {e}")
+        return
+
+    base_name = os.path.basename(target_file).rsplit('.', 1)[0]
+    txt_filename = f'generated_mcqs_{base_name}.txt'
+    pdf_filename = f'generated_mcqs_{base_name}.pdf'
+    save_txt(mcqs, txt_filename)
+    save_pdf(mcqs, pdf_filename)
+    print(f"MCQs successfully saved to:")
+    print(f" - {os.path.join(OUTPUT_FOLDER, txt_filename)}")
+    print(f" - {os.path.join(OUTPUT_FOLDER, pdf_filename)}")
 
 
 if __name__ == '__main__':

@@ -36,7 +36,9 @@
   --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -465,10 +467,21 @@ body {
   flex-shrink: 0;
 }
 
-.feature-icon.purple { background: rgba(99, 102, 241, 0.12); }
-.feature-icon.orange { background: rgba(249, 115, 22, 0.12); }
-.feature-icon.green  { background: rgba(16, 185, 129, 0.12); }
-.feature-icon.blue   { background: rgba(59, 130, 246, 0.12); }
+.feature-icon.purple {
+  background: rgba(99, 102, 241, 0.12);
+}
+
+.feature-icon.orange {
+  background: rgba(249, 115, 22, 0.12);
+}
+
+.feature-icon.green {
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.feature-icon.blue {
+  background: rgba(59, 130, 246, 0.12);
+}
 
 .feature-card h3 {
   font-size: 1.05rem;
@@ -707,20 +720,20 @@ body {
   background: rgba(99, 102, 241, 0.04);
 }
 
-.difficulty-input:checked + .difficulty-option {
+.difficulty-input:checked+.difficulty-option {
   border-color: var(--primary);
   background: rgba(99, 102, 241, 0.08);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
 }
 
-.difficulty-input#diff_easy:checked + .difficulty-option {
+.difficulty-input#diff_easy:checked+.difficulty-option {
   border-color: var(--success);
   background: rgba(16, 185, 129, 0.08);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
 
-.difficulty-input#diff_hard:checked + .difficulty-option {
+.difficulty-input#diff_hard:checked+.difficulty-option {
   border-color: var(--error);
   background: rgba(239, 68, 68, 0.06);
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
@@ -952,18 +965,18 @@ body {
   background: rgba(99, 102, 241, 0.04);
 }
 
-.option-item input[type="radio"]:checked + .option-label {
+.option-item input[type="radio"]:checked+.option-label {
   border-color: var(--primary);
   background: rgba(99, 102, 241, 0.08);
   color: var(--primary);
   font-weight: 600;
 }
 
-.option-item input[type="radio"]:disabled + .option-label {
+.option-item input[type="radio"]:disabled+.option-label {
   cursor: default;
 }
 
-.option-item input[type="radio"]:disabled:checked + .option-label {
+.option-item input[type="radio"]:disabled:checked+.option-label {
   border-color: var(--primary);
   background: rgba(99, 102, 241, 0.1);
 }
@@ -982,7 +995,7 @@ body {
   transition: var(--transition);
 }
 
-.option-item input[type="radio"]:checked + .option-label .option-letter {
+.option-item input[type="radio"]:checked+.option-label .option-letter {
   background: var(--primary);
   border-color: var(--primary);
   color: #fff;
@@ -1178,7 +1191,9 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-text {
